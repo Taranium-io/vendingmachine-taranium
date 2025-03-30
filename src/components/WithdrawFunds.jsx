@@ -67,7 +67,7 @@ const WithdrawFunds = ({ account, refreshSignal }) => {
     return (
         <Box mt={4} textAlign="center">
             <Typography variant="h5" fontWeight="bold" sx={{ color: "#4C4D4F" }}>
-                💰 Saldo Kontrak: {balance} ETH
+                💰 Saldo Kontrak: {balance} TARAN
             </Typography>
 
             {error && (
