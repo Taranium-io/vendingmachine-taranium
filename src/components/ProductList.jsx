@@ -1,59 +1,61 @@
 import React, { useState, useEffect } from "react";
 import { vendingMachine, web3 } from "../web3";
-import { Grid, Card, CardContent, Typography, Button } from "@mui/material";
+import { Grid2, Card, CardContent, Typography, Button } from "@mui/material";
 
-const ProductList = ({ account, refreshStock }) => {
-    const [products, setProducts] = useState([
-        { id: 1, name: "🥤 Minuman", price: 0.01, stock: 10 },
-        { id: 2, name: "🍫 Snack", price: 0.02, stock: 5 }
-    ]);
+const ProductList = ({ account, refreshSignal, onTransaction }) => {
+    const [products, setProducts] = useState([]);
 
-    const fetchStock = async () => {
-        const updatedProducts = await Promise.all(
-            products.map(async (product) => {
-                const stock = await vendingMachine.methods.getStock(product.id).call();
-                return { ...product, stock: Number(stock) };
-            })
-        );
-        setProducts(updatedProducts);
+    const fetchProducts = async () => {
+        try {
+            const count = await vendingMachine.methods.productCount().call();
+            const list = [];
+            for (let i = 1; i <= count; i++) {
+                const product = await vendingMachine.methods.getProduct(i).call();
+                list.push({
+                    id: product[0],
+                    name: product[1],
+                    price: web3.utils.fromWei(product[2], "ether"),
+                    stock: product[3],
+                });
+            }
+            setProducts(list);
+        } catch (err) {
+            console.error("Gagal memuat produk:", err);
+        }
     };
 
     useEffect(() => {
-        fetchStock();
-    }, [refreshStock]);
+        fetchProducts();
+    }, [refreshSignal]); // refresh ketika ada sinyal perubahan
 
     const buyProduct = async (productId, price) => {
-        if (!account) {
-            alert("Hubungkan wallet terlebih dahulu!");
-            return;
-        }
-
+        if (!account) return alert("Hubungkan wallet dulu");
         try {
             await vendingMachine.methods.buyProduct(productId, 1).send({
                 from: account,
                 value: web3.utils.toWei(price.toString(), "ether"),
             });
-
-            await fetchStock();
-            alert("Pembelian berhasil! Stok telah diperbarui.");
-        } catch (error) {
-            console.error("Gagal membeli produk:", error);
+            fetchProducts(); // update stok setelah beli
+            if (onTransaction) onTransaction();
+            alert("Pembelian berhasil!");
+        } catch (err) {
+            console.error("Gagal membeli:", err);
         }
     };
 
     return (
         <div>
-            <Typography variant="h5" fontWeight="bold" textAlign="center" color="#4C4D4F" mt={3} gutterBottom>
+            <Typography variant="h5" fontWeight="bold" textAlign="center" mt={3} sx={{ color: "#4c4d4f" }}>
                 Daftar Produk
             </Typography>
-            <Grid container spacing={3} justifyContent="center">
+            <Grid2 container spacing={3} justifyContent="center">
                 {products.map((product) => (
-                    <Grid item xs={12} sm={6} key={product.id}>
+                    <Grid2 item xs={12} sm={6} key={product.id}>
                         <Card sx={{ backgroundColor: "#616161", color: "#fff" }}>
                             <CardContent sx={{ textAlign: "center" }}>
                                 <Typography variant="h6">{product.name}</Typography>
                                 <Typography color="yellow">{product.price} TARAN</Typography>
-                                <Typography color={product.stock > 0 ? "#02EBD0" : "red"}>
+                                <Typography color={product.stock > 0 ? "#83b74d" : "red"}>
                                     Stok: {product.stock}
                                 </Typography>
                                 <Button
@@ -67,9 +69,9 @@ const ProductList = ({ account, refreshStock }) => {
                                 </Button>
                             </CardContent>
                         </Card>
-                    </Grid>
+                    </Grid2>
                 ))}
-            </Grid>
+            </Grid2>
         </div>
     );
 };
