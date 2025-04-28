@@ -1,18 +1,21 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.29;
+pragma solidity ^0.8.20;
 
 contract VendingMachine {
     address public owner;
     uint256 public productCount = 0;
+    uint256 public nextProductId;
 
     struct Product {
         uint256 id;
+        string code; // Tambahan: kode produk
         string name;
         uint256 price;
         uint256 stock;
     }
 
-    mapping(uint256 => Product) public products;
+    mapping(uint256 => Product) public products; // Mapping dari id ke Produk
+    mapping(string => uint256) private codeToId; // Tambahan: Mapping dari kode produk ke id produk
 
     event Purchased(
         address indexed buyer,
@@ -29,31 +32,28 @@ contract VendingMachine {
     event Withdraw(address indexed owner, uint256 amount);
 
     modifier onlyOwner() {
-        require(
-            msg.sender == owner,
-            "Hanya pemilik kontrak yang bisa melakukan ini"
-        );
+        require(msg.sender == owner, "Only owner can perform this action");
         _;
     }
 
     constructor() {
         owner = msg.sender;
-        addProduct(string.concat(unicode"🥤", " Minuman"), 0.01 ether, 10);
-        addProduct(string.concat(unicode"🍫", " Snack"), 0.02 ether, 5);
+        nextProductId = 1;
     }
 
-    function addProduct(
-        string memory name,
-        uint256 price,
-        uint256 stock
-    ) public onlyOwner {
-        require(price > 0, "Harga harus lebih dari 0");
-        require(stock > 0, "Stok harus lebih dari 0");
+    function addProduct(string memory _code, string memory _name, uint256 _price, uint256 _stock) public onlyOwner {
+        require(codeToId[_code] == 0, "Product code already exists");
 
-        productCount++;
-        products[productCount] = Product(productCount, name, price, stock);
+        products[nextProductId] = Product({
+            id: nextProductId,
+            code: _code,
+            name: _name,
+            price: _price,
+            stock: _stock
+        });
 
-        emit ProductAdded(productCount, name, price, stock);
+        codeToId[_code] = nextProductId;
+        nextProductId++;
     }
 
     function buyProduct(uint256 productId, uint256 quantity) public payable {
@@ -74,6 +74,24 @@ contract VendingMachine {
         emit StockAdded(productId, quantity);
     }
 
+    function addStockByCode(string memory code, uint256 quantity)
+        external
+        onlyOwner
+    {
+        require(quantity > 0, "Jumlah harus > 0");
+        uint256 productId = codeToId[code];
+        require(productId != 0, "Produk tidak ditemukan");
+
+        products[productId].stock += quantity;
+    }
+
+    function updateStockByCode(string memory _code, uint256 _newStock) public onlyOwner {
+        uint256 id = codeToId[_code];
+        require(id != 0, "Product code does not exist");
+
+        products[id].stock = _newStock;
+    }
+
     function getBalance() public view returns (uint256) {
         return address(this).balance;
     }
@@ -88,20 +106,31 @@ contract VendingMachine {
         emit Withdraw(owner, balance);
     }
 
-    function getProduct(uint256 productId)
-        public
-        view
-        returns (
-            uint256,
-            string memory,
-            uint256,
-            uint256
-        )
-    {
-        Product memory product = products[productId];
-        return (product.id, product.name, product.price, product.stock);
+    function updatePriceByCode(string memory _code, uint256 _newPrice) public onlyOwner {
+        uint256 id = codeToId[_code];
+        require(id != 0, "Product code does not exist");
+
+        products[id].price = _newPrice;
+    }
+
+    function getProductByCode(string memory _code) public view returns (Product memory) {
+        uint256 id = codeToId[_code];
+        require(id != 0, "Product code does not exist");
+        return products[id];
+    }
+
+    function getProductById(uint256 _id) public view returns (Product memory) {
+        require(_id != 0 && _id < nextProductId, "Product ID does not exist");
+        return products[_id];
+    }
+
+    function getAllProducts() public view returns (Product[] memory) {
+        Product[] memory allProducts = new Product[](nextProductId - 1);
+        for (uint256 i = 1; i < nextProductId; i++) {
+            allProducts[i - 1] = products[i];
+        }
+        return allProducts;
     }
 }
-
 
 // https://testnet-scan.taranium.com/address/0xEB2ccC22bcBE106a5f223408163FDdd665c6Eb72?tab=contract

@@ -1,6 +1,6 @@
 # Vending Machine Demo with Taranium Blockchain
 
-![Demo Screenshot](https://github.com/Taranium-io/vendingmachine-taranium/blob/main/public/demo.png)
+![Demo Screenshot](https://github.com/budsus/vendingmachine-taranium/blob/main/public/demo.png)
 
 This project is a simple demo related to Defi running on Taranium Test-Net.
 

@@ -7,18 +7,15 @@ const ProductList = ({ account, refreshSignal, onTransaction }) => {
 
     const fetchProducts = async () => {
         try {
-            const count = await vendingMachine.methods.productCount().call();
-            const list = [];
-            for (let i = 1; i <= count; i++) {
-                const product = await vendingMachine.methods.getProduct(i).call();
-                list.push({
-                    id: product[0],
-                    name: product[1],
-                    price: web3.utils.fromWei(product[2], "ether"),
-                    stock: product[3],
-                });
-            }
-            setProducts(list);
+            const list = await vendingMachine.methods.getAllProducts().call();
+            const mappedProducts = list.map((product) => ({
+                id: product.id,
+                code: product.code,
+                name: product.name,
+                price: web3.utils.fromWei(product.price.toString(), "ether"),
+                stock: product.stock,
+            }));
+            setProducts(mappedProducts);
         } catch (err) {
             console.error("Gagal memuat produk:", err);
         }
@@ -26,7 +23,7 @@ const ProductList = ({ account, refreshSignal, onTransaction }) => {
 
     useEffect(() => {
         fetchProducts();
-    }, [refreshSignal]); // refresh ketika ada sinyal perubahan
+    }, [refreshSignal]);
 
     const buyProduct = async (productId, price) => {
         if (!account) return alert("Hubungkan wallet dulu");
@@ -35,7 +32,7 @@ const ProductList = ({ account, refreshSignal, onTransaction }) => {
                 from: account,
                 value: web3.utils.toWei(price.toString(), "ether"),
             });
-            fetchProducts(); // update stok setelah beli
+            fetchProducts();
             if (onTransaction) onTransaction();
             alert("Pembelian berhasil!");
         } catch (err) {
@@ -45,12 +42,12 @@ const ProductList = ({ account, refreshSignal, onTransaction }) => {
 
     return (
         <div>
-            <Typography variant="h5" fontWeight="bold" textAlign="center" mt={3} sx={{ color: "#4c4d4f" }}>
+            <Typography variant="h5" fontWeight="bold" textAlign="center" sx={{ mt:3, color: "#4c4d4f" }}>
                 Daftar Produk
             </Typography>
             <Grid2 container spacing={3} justifyContent="center">
                 {products.map((product) => (
-                    <Grid2 item xs={12} sm={6} key={product.id}>
+                    <Grid2 size={{ xs:12, sm:6}} key={product.id}>
                         <Card sx={{ backgroundColor: "#616161", color: "#fff" }}>
                             <CardContent sx={{ textAlign: "center" }}>
                                 <Typography variant="h6">{product.name}</Typography>

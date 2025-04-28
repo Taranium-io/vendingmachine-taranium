@@ -65,9 +65,9 @@ const WithdrawFunds = ({ account, refreshSignal }) => {
     if (!isOwner) return null;
 
     return (
-        <Box mt={4} textAlign="center">
+        <Box sx={{ mt: 4 }} textAlign="center">
             <Typography variant="h5" fontWeight="bold" sx={{ color: "#4C4D4F" }}>
-                💰 Saldo Kontrak: {balance} TARAN
+                💰 Saldo Kontrak: {balance} ETH
             </Typography>
 
             {error && (

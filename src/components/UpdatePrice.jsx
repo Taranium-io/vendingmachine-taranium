@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { vendingMachine } from "../web3";
+import { vendingMachine, web3 } from "../web3";
 import { Grid2, TextField, Button, Typography, Box, Alert } from "@mui/material";
 
-const AddStock = ({ account, onStockUpdated }) => {
+const UpdatePrice = ({ account, onPriceUpdated }) => {
     const [productCode, setProductCode] = useState("");
-    const [quantity, setQuantity] = useState("");
+    const [newPrice, setNewPrice] = useState("");
     const [isOwner, setIsOwner] = useState(false);
     const [error, setError] = useState("");
 
@@ -15,18 +15,16 @@ const AddStock = ({ account, onStockUpdated }) => {
                 setIsOwner(account.toLowerCase() === ownerAddress.toLowerCase());
             }
         };
-
         checkOwner();
     }, [account]);
 
     const validate = () => {
         if (!productCode.trim()) return "Kode Produk wajib diisi.";
-        if (!quantity.trim()) return "Jumlah stok wajib diisi.";
-        if (isNaN(quantity) || Number(quantity) <= 0) return "Jumlah stok harus lebih dari 0.";
+        if (!newPrice.trim() || isNaN(newPrice) || Number(newPrice) <= 0) return "Harga baru harus lebih dari 0.";
         return null;
     };
 
-    const addStock = async () => {
+    const updatePrice = async () => {
         const validationError = validate();
         if (validationError) {
             setError(validationError);
@@ -34,19 +32,15 @@ const AddStock = ({ account, onStockUpdated }) => {
         }
 
         try {
-            const product = await vendingMachine.methods.getProductByCode(productCode).call();
-            const newStock = Number(product.stock) + Number(quantity);
-
-            await vendingMachine.methods.updateStockByCode(productCode, newStock).send({ from: account });
-
-            alert(`Stok berhasil ditambahkan. Produk Kode: ${productCode}, Jumlah: ${quantity}`);
+            await vendingMachine.methods.updatePriceByCode(productCode, web3.utils.toWei(newPrice, "ether")).send({ from: account });
+            alert(`Harga produk ${productCode} berhasil diperbarui menjadi ${newPrice} TARAN.`);
             setProductCode("");
-            setQuantity("");
+            setNewPrice("");
             setError("");
-            onStockUpdated?.();
+            onPriceUpdated?.();
         } catch (err) {
-            console.error("Gagal menambahkan stok:", err);
-            setError("Terjadi kesalahan saat menambahkan stok.");
+            console.error("Gagal memperbarui harga:", err);
+            setError("Terjadi kesalahan saat memperbarui harga.");
         }
     };
 
@@ -55,7 +49,7 @@ const AddStock = ({ account, onStockUpdated }) => {
     return (
         <Box mt={4} textAlign="center">
             <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ color: "#4C4D4F" }}>
-                Tambah Stok Produk (berdasarkan Kode)
+                Update Harga Produk (berdasarkan Kode)
             </Typography>
 
             {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
@@ -71,16 +65,16 @@ const AddStock = ({ account, onStockUpdated }) => {
                 </Grid2>
                 <Grid2 item xs={4}>
                     <TextField
-                        label="Jumlah Stok"
+                        label="Harga Baru (TARAN)"
                         type="number"
                         fullWidth
-                        value={quantity}
-                        onChange={(e) => setQuantity(e.target.value)}
+                        value={newPrice}
+                        onChange={(e) => setNewPrice(e.target.value)}
                     />
                 </Grid2>
                 <Grid2 item xs={4}>
-                    <Button variant="contained" color="warning" sx={{ mt: 2 }} onClick={addStock}>
-                        Tambah Stok
+                    <Button variant="contained" color="primary" sx={{ mt: 2 }} onClick={updatePrice}>
+                        Update Harga
                     </Button>
                 </Grid2>
             </Grid2>
@@ -88,4 +82,4 @@ const AddStock = ({ account, onStockUpdated }) => {
     );
 };
 
-export default AddStock;
+export default UpdatePrice;
