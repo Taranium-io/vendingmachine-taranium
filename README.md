@@ -10,5 +10,8 @@ This Defi demonstrates how to utilize a simple Smart Contract Vending Machine. T
 "Vending Machine" as a simple form of smart contract: 
 
 - User inserts money,
-- selects a product, and
+- selects a product,
 - the machine automatically dispenses the goods without human intermediary.
+- update stocks,
+- update product price, and
+- withdraw Funds.
