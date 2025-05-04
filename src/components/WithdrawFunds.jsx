@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { vendingMachine, web3 } from "../web3";
+import { vendingMachine, vntaranToken, web3 } from "../web3";
 import { Typography, Button, Box, Alert } from "@mui/material";
 
 const WithdrawFunds = ({ account, refreshSignal }) => {
@@ -8,7 +8,6 @@ const WithdrawFunds = ({ account, refreshSignal }) => {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
-    // Cek apakah akun adalah owner
     useEffect(() => {
         const checkOwnership = async () => {
             try {
@@ -22,17 +21,16 @@ const WithdrawFunds = ({ account, refreshSignal }) => {
         checkOwnership();
     }, [account]);
 
-    // Ambil saldo kontrak setiap kali ada sinyal refresh
     useEffect(() => {
         const fetchBalance = async () => {
             try {
-                const rawBalance = await vendingMachine.methods.getBalance().call();
-                const balanceEth = parseFloat(web3.utils.fromWei(rawBalance, "ether")).toFixed(6);
-                setBalance(balanceEth);
+                const rawBalance = await vntaranToken.methods.balanceOf(vendingMachine.options.address).call();
+                const balanceVntaran = parseFloat(web3.utils.fromWei(rawBalance, "ether")).toFixed(6);
+                setBalance(balanceVntaran);
                 setError("");
             } catch (err) {
                 console.error("Gagal mengambil saldo:", err);
-                setError("Gagal mengambil saldo kontrak.");
+                setError("Gagal mengambil saldo token kontrak.");
             }
         };
 
@@ -52,11 +50,11 @@ const WithdrawFunds = ({ account, refreshSignal }) => {
 
         try {
             await vendingMachine.methods.withdraw().send({ from: account });
-            alert("Penarikan dana berhasil!");
+            alert("Penarikan VNTARAN berhasil!");
             setBalance("0.000000");
         } catch (err) {
             console.error("Penarikan gagal:", err);
-            setError("Penarikan dana gagal. Pastikan Anda adalah pemilik kontrak dan ada saldo.");
+            setError("Penarikan gagal. Pastikan Anda adalah pemilik dan ada saldo.");
         } finally {
             setLoading(false);
         }

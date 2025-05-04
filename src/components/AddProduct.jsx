@@ -79,7 +79,7 @@ const AddProduct = ({ account, onProductAdded }) => {
                 </Grid2>
                 <Grid2 size={{xs:2}}>
                     <TextField
-                        label="Harga (TARAN)"
+                        label="Harga (VNTARAN)"
                         type="number"
                         fullWidth
                         value={price}

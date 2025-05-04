@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { vendingMachine, web3 } from "../web3";
+import { vendingMachine, vntaranToken, web3 } from "../web3";
+import { BN } from "bn.js";
 import { Grid2, Card, CardContent, Typography, Button } from "@mui/material";
 
 const ProductList = ({ account, refreshSignal, onTransaction, searchQuery }) => {
@@ -41,13 +42,29 @@ const ProductList = ({ account, refreshSignal, onTransaction, searchQuery }) => 
         }
     }, [searchQuery, products]);
 
-    const buyProduct = async (productId, price) => {
+    const buyProduct = async (productCode, price) => {
         if (!account) return alert("Hubungkan wallet dulu");
+
         try {
-            await vendingMachine.methods.buyProduct(productId, 1).send({
-                from: account,
-                value: web3.utils.toWei(price.toString(), "ether"),
-            });
+            const totalPrice = web3.utils.toWei(price.toString(), "ether");
+
+            // Cek saldo VNTARAN
+            const balance = await vntaranToken.methods.balanceOf(account).call();
+            if (new BN(balance).lt(new BN(totalPrice))) {
+                alert("Saldo VNTARAN tidak mencukupi.");
+                return;
+            }
+
+            // Approve token
+            await vntaranToken.methods
+                .approve(vendingMachine.options.address, totalPrice)
+                .send({ from: account });
+
+            // Beli produk
+            await vendingMachine.methods
+                .buyProductByCode(productCode, 1)
+                .send({ from: account });
+
             fetchProducts();
             if (onTransaction) onTransaction();
             alert("Pembelian berhasil!");
@@ -67,7 +84,7 @@ const ProductList = ({ account, refreshSignal, onTransaction, searchQuery }) => 
                         <Card sx={{ backgroundColor: "#616161", color: "#fff" }}>
                             <CardContent sx={{ textAlign: "center" }}>
                                 <Typography variant="h6">{product.name}</Typography>
-                                <Typography color="yellow">{product.price} TARAN</Typography>
+                                <Typography color="yellow">{product.price} VNTARAN</Typography>
                                 <Typography color={product.stock > 0 ? "#83b74d" : "red"}>
                                     Stok: {product.stock}
                                 </Typography>
@@ -75,7 +92,7 @@ const ProductList = ({ account, refreshSignal, onTransaction, searchQuery }) => 
                                     variant="contained"
                                     color="primary"
                                     sx={{ mt: 2 }}
-                                    onClick={() => buyProduct(product.id, product.price)}
+                                    onClick={() => buyProduct(product.code, product.price)}
                                     disabled={product.stock <= 0}
                                 >
                                     {product.stock > 0 ? "Beli" : "Habis"}

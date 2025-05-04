@@ -1,14 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-interface IERC20 {
-    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
-    function transfer(address recipient, uint256 amount) external returns (bool);
-    function balanceOf(address account) external view returns (uint256);
-}
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract VendingMachine {
-    address public owner;
+contract VendingMachine is Ownable {
     IERC20 public vntaranToken;
 
     struct Product {
@@ -23,23 +19,32 @@ contract VendingMachine {
     mapping(string => uint256) public productCodeToId;
     uint256 public nextProductId;
 
-    event ProductAdded(uint256 indexed id, string code, string name, uint256 price, uint256 stock);
-    event ProductPurchased(address indexed buyer, uint256 indexed productId, uint256 quantity);
+    event ProductAdded(
+        uint256 indexed id,
+        string code,
+        string name,
+        uint256 price,
+        uint256 stock
+    );
+    event ProductPurchased(
+        address indexed buyer,
+        uint256 indexed productId,
+        uint256 quantity
+    );
     event StockAdded(uint256 indexed productId, uint256 addedStock);
     event PriceUpdated(uint256 indexed productId, uint256 newPrice);
     event FundsWithdrawn(address indexed to, uint256 amount);
 
-    constructor(address _vntaranTokenAddress) {
-        owner = msg.sender;
+    constructor(address _vntaranTokenAddress) Ownable(msg.sender) {
         vntaranToken = IERC20(_vntaranTokenAddress);
     }
 
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Only owner can call this function");
-        _;
-    }
-
-    function addProduct(string memory code, string memory name, uint256 price, uint256 stock) public onlyOwner {
+    function addProduct(
+        string memory code,
+        string memory name,
+        uint256 price,
+        uint256 stock
+    ) public onlyOwner {
         require(productCodeToId[code] == 0, "Product code already exists");
         uint256 productId = nextProductId + 1;
         products[productId] = Product(productId, code, name, price, stock);
@@ -49,7 +54,10 @@ contract VendingMachine {
         emit ProductAdded(productId, code, name, price, stock);
     }
 
-    function addStockByCode(string memory code, uint256 quantity) public onlyOwner {
+    function addStockByCode(string memory code, uint256 quantity)
+        public
+        onlyOwner
+    {
         uint256 productId = productCodeToId[code];
         require(productId != 0, "Product code not found");
         products[productId].stock += quantity;
@@ -57,7 +65,10 @@ contract VendingMachine {
         emit StockAdded(productId, quantity);
     }
 
-    function updatePriceByCode(string memory code, uint256 newPrice) public onlyOwner {
+    function updatePriceByCode(string memory code, uint256 newPrice)
+        public
+        onlyOwner
+    {
         uint256 productId = productCodeToId[code];
         require(productId != 0, "Product code not found");
         products[productId].price = newPrice;
@@ -73,19 +84,54 @@ contract VendingMachine {
         require(product.stock >= quantity, "Not enough stock");
 
         uint256 totalPrice = product.price * quantity;
-        require(vntaranToken.transferFrom(msg.sender, address(this), totalPrice), "Token transfer failed");
+
+        uint256 allowance = vntaranToken.allowance(msg.sender, address(this));
+        require(allowance >= totalPrice, "Allowance not sufficient");
+
+        uint256 balance = vntaranToken.balanceOf(msg.sender);
+        require(balance >= totalPrice, "Insufficient VNTARAN balance");
+
+        bool success = vntaranToken.transferFrom(
+            msg.sender,
+            address(this),
+            totalPrice
+        );
+        require(success, "Token transfer failed");
 
         product.stock -= quantity;
 
         emit ProductPurchased(msg.sender, productId, quantity);
     }
 
-    function getProductById(uint256 productId) public view returns (Product memory) {
-        require(productId != 0 && productId <= nextProductId, "Invalid product ID");
+    function getTotalPriceByCode(string memory code, uint256 quantity)
+        public
+        view
+        returns (uint256)
+    {
+        uint256 productId = productCodeToId[code];
+        require(productId != 0, "Invalid product code");
+
+        Product memory product = products[productId];
+        return product.price * quantity;
+    }
+
+    function getProductById(uint256 productId)
+        public
+        view
+        returns (Product memory)
+    {
+        require(
+            productId != 0 && productId <= nextProductId,
+            "Invalid product ID"
+        );
         return products[productId];
     }
 
-    function getProductByCode(string memory code) public view returns (Product memory) {
+    function getProductByCode(string memory code)
+        public
+        view
+        returns (Product memory)
+    {
         uint256 productId = productCodeToId[code];
         require(productId != 0, "Product code not found");
         return products[productId];
@@ -99,9 +145,12 @@ contract VendingMachine {
         return allProducts;
     }
 
-    function withdrawTokens(address to, uint256 amount) public onlyOwner {
-        require(vntaranToken.transfer(to, amount), "Withdraw failed");
-        emit FundsWithdrawn(to, amount);
+    function withdraw() public onlyOwner {
+        uint256 amount = vntaranToken.balanceOf(address(this));
+        require(amount > 0, "No token to withdraw");
+        require(vntaranToken.transfer(owner(), amount), "Transfer failed");
+
+        emit FundsWithdrawn(owner(), amount);
     }
 
     function getBalance() public view returns (uint256) {
@@ -115,8 +164,7 @@ contract VendingMachine {
     {
         uint256 matchedCount = 0;
 
-        // Menghitung jumlah produk yang cocok
-        for (uint256 i = 1; i < nextProductId; i++) {
+        for (uint256 i = 1; i <= nextProductId; i++) {
             if (
                 keccak256(abi.encodePacked(products[i].name)) ==
                 keccak256(abi.encodePacked(_name))
@@ -125,11 +173,10 @@ contract VendingMachine {
             }
         }
 
-        // Mengumpulkan produk yang cocok
         Product[] memory matchedProducts = new Product[](matchedCount);
         uint256 index = 0;
 
-        for (uint256 i = 1; i < nextProductId; i++) {
+        for (uint256 i = 1; i <= nextProductId; i++) {
             if (
                 keccak256(abi.encodePacked(products[i].name)) ==
                 keccak256(abi.encodePacked(_name))

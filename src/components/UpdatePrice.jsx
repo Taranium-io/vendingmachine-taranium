@@ -33,7 +33,7 @@ const UpdatePrice = ({ account, onPriceUpdated }) => {
 
         try {
             await vendingMachine.methods.updatePriceByCode(productCode, web3.utils.toWei(newPrice, "ether")).send({ from: account });
-            alert(`Harga produk ${productCode} berhasil diperbarui menjadi ${newPrice} TARAN.`);
+            alert(`Harga produk ${productCode} berhasil diperbarui menjadi ${newPrice} VNTARAN.`);
             setProductCode("");
             setNewPrice("");
             setError("");
@@ -65,7 +65,7 @@ const UpdatePrice = ({ account, onPriceUpdated }) => {
                 </Grid2>
                 <Grid2 item xs={4}>
                     <TextField
-                        label="Harga Baru (TARAN)"
+                        label="Harga Baru (VNTARAN)"
                         type="number"
                         fullWidth
                         value={newPrice}
