@@ -41,7 +41,12 @@ contract VendingMachine {
         nextProductId = 1;
     }
 
-    function addProduct(string memory _code, string memory _name, uint256 _price, uint256 _stock) public onlyOwner {
+    function addProduct(
+        string memory _code,
+        string memory _name,
+        uint256 _price,
+        uint256 _stock
+    ) public onlyOwner {
         require(codeToId[_code] == 0, "Product code already exists");
 
         products[nextProductId] = Product({
@@ -85,7 +90,10 @@ contract VendingMachine {
         products[productId].stock += quantity;
     }
 
-    function updateStockByCode(string memory _code, uint256 _newStock) public onlyOwner {
+    function updateStockByCode(string memory _code, uint256 _newStock)
+        public
+        onlyOwner
+    {
         uint256 id = codeToId[_code];
         require(id != 0, "Product code does not exist");
 
@@ -106,14 +114,21 @@ contract VendingMachine {
         emit Withdraw(owner, balance);
     }
 
-    function updatePriceByCode(string memory _code, uint256 _newPrice) public onlyOwner {
+    function updatePriceByCode(string memory _code, uint256 _newPrice)
+        public
+        onlyOwner
+    {
         uint256 id = codeToId[_code];
         require(id != 0, "Product code does not exist");
 
         products[id].price = _newPrice;
     }
 
-    function getProductByCode(string memory _code) public view returns (Product memory) {
+    function getProductByCode(string memory _code)
+        public
+        view
+        returns (Product memory)
+    {
         uint256 id = codeToId[_code];
         require(id != 0, "Product code does not exist");
         return products[id];
@@ -130,6 +145,40 @@ contract VendingMachine {
             allProducts[i - 1] = products[i];
         }
         return allProducts;
+    }
+
+    function searchProductsByName(string memory _name)
+        public
+        view
+        returns (Product[] memory)
+    {
+        uint256 matchedCount = 0;
+
+        // Menghitung jumlah produk yang cocok
+        for (uint256 i = 1; i < nextProductId; i++) {
+            if (
+                keccak256(abi.encodePacked(products[i].name)) ==
+                keccak256(abi.encodePacked(_name))
+            ) {
+                matchedCount++;
+            }
+        }
+
+        // Mengumpulkan produk yang cocok
+        Product[] memory matchedProducts = new Product[](matchedCount);
+        uint256 index = 0;
+
+        for (uint256 i = 1; i < nextProductId; i++) {
+            if (
+                keccak256(abi.encodePacked(products[i].name)) ==
+                keccak256(abi.encodePacked(_name))
+            ) {
+                matchedProducts[index] = products[i];
+                index++;
+            }
+        }
+
+        return matchedProducts;
     }
 }
 

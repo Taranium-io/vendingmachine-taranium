@@ -2,8 +2,9 @@ import React, { useState, useEffect } from "react";
 import { vendingMachine, web3 } from "../web3";
 import { Grid2, Card, CardContent, Typography, Button } from "@mui/material";
 
-const ProductList = ({ account, refreshSignal, onTransaction }) => {
+const ProductList = ({ account, refreshSignal, onTransaction, searchQuery }) => {
     const [products, setProducts] = useState([]);
+    const [filteredProducts, setFilteredProducts] = useState([]);
 
     const fetchProducts = async () => {
         try {
@@ -16,6 +17,7 @@ const ProductList = ({ account, refreshSignal, onTransaction }) => {
                 stock: product.stock,
             }));
             setProducts(mappedProducts);
+            setFilteredProducts(mappedProducts);
         } catch (err) {
             console.error("Gagal memuat produk:", err);
         }
@@ -24,6 +26,20 @@ const ProductList = ({ account, refreshSignal, onTransaction }) => {
     useEffect(() => {
         fetchProducts();
     }, [refreshSignal]);
+
+    useEffect(() => {
+        if (searchQuery && searchQuery.trim() !== "") {
+            const lowerCaseQuery = searchQuery.toLowerCase();
+            const filtered = products.filter(
+                (p) =>
+                    p.name.toLowerCase().includes(lowerCaseQuery) ||
+                    p.code.toLowerCase().includes(lowerCaseQuery)
+            );
+            setFilteredProducts(filtered);
+        } else {
+            setFilteredProducts(products);
+        }
+    }, [searchQuery, products]);
 
     const buyProduct = async (productId, price) => {
         if (!account) return alert("Hubungkan wallet dulu");
@@ -42,12 +58,12 @@ const ProductList = ({ account, refreshSignal, onTransaction }) => {
 
     return (
         <div>
-            <Typography variant="h5" fontWeight="bold" textAlign="center" sx={{ mt:3, color: "#4c4d4f" }}>
+            <Typography variant="h5" fontWeight="bold" textAlign="center" sx={{ mt: 3, color: "#4c4d4f" }}>
                 Daftar Produk
             </Typography>
             <Grid2 container spacing={3} justifyContent="center">
-                {products.map((product) => (
-                    <Grid2 size={{ xs:12, sm:6}} key={product.id}>
+                {filteredProducts.map((product) => (
+                    <Grid2 size={{ xs: 12, sm: 6 }} key={product.id}>
                         <Card sx={{ backgroundColor: "#616161", color: "#fff" }}>
                             <CardContent sx={{ textAlign: "center" }}>
                                 <Typography variant="h6">{product.name}</Typography>

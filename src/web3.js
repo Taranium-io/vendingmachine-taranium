@@ -2,108 +2,9 @@ import Web3 from 'web3';
 
 const web3 = new Web3(window.ethereum);
 
-const contractAddress = "0xD42DEBB713dB7aE7522f6e33e814D72167aeBb02"; // Ganti dengan alamat smart contract
+const contractAddress = "0x5FA161E5DAE09dFD1C002166868EA337dDAabfE8"; // Ganti dengan alamat smart contract
 // copy dari REMIX IDE atau dari Taranium Test Block Browser, dan paste pada variabel abi
 const abi = [
-	{
-		"inputs": [],
-		"stateMutability": "nonpayable",
-		"type": "constructor"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "uint256",
-				"name": "productId",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "string",
-				"name": "name",
-				"type": "string"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "price",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "stock",
-				"type": "uint256"
-			}
-		],
-		"name": "ProductAdded",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "buyer",
-				"type": "address"
-			},
-			{
-				"indexed": true,
-				"internalType": "uint256",
-				"name": "productId",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "quantity",
-				"type": "uint256"
-			}
-		],
-		"name": "Purchased",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "uint256",
-				"name": "productId",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "quantity",
-				"type": "uint256"
-			}
-		],
-		"name": "StockAdded",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "owner",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			}
-		],
-		"name": "Withdraw",
-		"type": "event"
-	},
 	{
 		"inputs": [
 			{
@@ -185,6 +86,148 @@ const abi = [
 		"outputs": [],
 		"stateMutability": "payable",
 		"type": "function"
+	},
+	{
+		"inputs": [],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "productId",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "price",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "stock",
+				"type": "uint256"
+			}
+		],
+		"name": "ProductAdded",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "buyer",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "productId",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "quantity",
+				"type": "uint256"
+			}
+		],
+		"name": "Purchased",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "productId",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "quantity",
+				"type": "uint256"
+			}
+		],
+		"name": "StockAdded",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "_code",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_newPrice",
+				"type": "uint256"
+			}
+		],
+		"name": "updatePriceByCode",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "_code",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_newStock",
+				"type": "uint256"
+			}
+		],
+		"name": "updateStockByCode",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "withdraw",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "owner",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "Withdraw",
+		"type": "event"
 	},
 	{
 		"inputs": [],
@@ -358,19 +401,6 @@ const abi = [
 		"type": "function"
 	},
 	{
-		"inputs": [],
-		"name": "productCount",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
 		"inputs": [
 			{
 				"internalType": "uint256",
@@ -413,43 +443,46 @@ const abi = [
 		"inputs": [
 			{
 				"internalType": "string",
-				"name": "_code",
+				"name": "_name",
 				"type": "string"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_newPrice",
-				"type": "uint256"
 			}
 		],
-		"name": "updatePriceByCode",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
+		"name": "searchProductsByName",
+		"outputs": [
 			{
-				"internalType": "string",
-				"name": "_code",
-				"type": "string"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_newStock",
-				"type": "uint256"
+				"components": [
+					{
+						"internalType": "uint256",
+						"name": "id",
+						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "code",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "name",
+						"type": "string"
+					},
+					{
+						"internalType": "uint256",
+						"name": "price",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "stock",
+						"type": "uint256"
+					}
+				],
+				"internalType": "struct VendingMachine.Product[]",
+				"name": "",
+				"type": "tuple[]"
 			}
 		],
-		"name": "updateStockByCode",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "withdraw",
-		"outputs": [],
-		"stateMutability": "nonpayable",
+		"stateMutability": "view",
 		"type": "function"
 	}
 ];

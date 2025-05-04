@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Box, Divider, Grid2, Paper, Typography, Tabs, Tab, Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button } from "@mui/material";
+import { Box, Divider, Grid2, Paper, Typography, Tabs, Tab, Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button, TextField } from "@mui/material";
 import WalletConnect from "./components/WalletConnect";
 import ProductList from "./components/ProductList";
 import AddStock from "./components/AddStock";
@@ -14,34 +14,14 @@ const App = () => {
     const [tabIndex, setTabIndex] = useState(0);
     const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
     const [openDialog, setOpenDialog] = useState(false);
-
-    const triggerRefresh = () => {
-        setRefreshSignal(prev => prev + 1);
-    };
-
-    const triggerBalanceRefresh = () => {
-        setRefreshBalance(prev => prev + 1);
-    };
-
-    const handleTabChange = (event, newValue) => {
-        setTabIndex(newValue);
-    };
-
-    const handleSnackbar = (message, severity = "success") => {
-        setSnackbar({ open: true, message, severity });
-    };
-
-    const handleCloseSnackbar = () => {
-        setSnackbar({ ...snackbar, open: false });
-    };
-
-    const handleWithdrawRequest = () => {
-        setOpenDialog(true);
-    };
-
-    const handleDialogClose = () => {
-        setOpenDialog(false);
-    };
+    const [searchQuery, setSearchQuery] = useState("");     
+    const triggerRefresh = () => setRefreshSignal(prev => prev + 1);
+    const triggerBalanceRefresh = () => setRefreshBalance(prev => prev + 1);
+    const handleTabChange = (event, newValue) => setTabIndex(newValue);
+    const handleSnackbar = (message, severity = "success") => setSnackbar({ open: true, message, severity });
+    const handleCloseSnackbar = () => setSnackbar({ ...snackbar, open: false });
+    const handleWithdrawRequest = () => setOpenDialog(true);
+    const handleDialogClose = () => setOpenDialog(false);
 
     return (
         <Box display="flex" alignItems="center" justifyContent="center"
@@ -54,18 +34,31 @@ const App = () => {
                             🛒 Vending Machine DApp
                         </Typography>
                         <WalletConnect setAccount={setAccount} />
+
+                        {/* Search Bar */}
+                        <TextField
+                            variant="outlined"
+                            label="Cari produk..."
+                            fullWidth
+                            sx={{ my: 2 }}
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+
                         <ProductList
                             account={account}
                             refreshSignal={refreshSignal}
+                            searchQuery={searchQuery}  // Kirim ke ProductList
                             onTransaction={() => { triggerBalanceRefresh(); handleSnackbar("Transaksi berhasil!"); }}
                         />
+
                         <Divider sx={{ mt: 5, mb: 3 }} />
 
                         {/* Menu Tabs */}
                         <Tabs value={tabIndex} onChange={handleTabChange} centered textColor="primary" indicatorColor="primary" sx={{ mb: 3 }}>
                             <Tab label="Tambah Stok" />
                             <Tab label="Update Harga" />
-                            <Tab label="Tambah Produk" />
+                            <Tab label="Produk Baru" />
                             <Tab label="Tarik Dana" />
                         </Tabs>
 
