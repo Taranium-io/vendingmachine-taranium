@@ -1,4 +1,5 @@
 # Vending Machine Demo with Taranium Blockchain
+## This is token-vntaran branch
 
 ![Demo Screenshot](https://github.com/Taranium-io/vendingmachine-taranium/blob/main/public/demo.png)
 
