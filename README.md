@@ -15,3 +15,4 @@ This Defi demonstrates how to utilize a simple Smart Contract Vending Machine. T
 - update stocks,
 - update product price, and
 - withdraw Funds.
+- Search product by name
