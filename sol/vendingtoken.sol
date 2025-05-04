@@ -22,7 +22,6 @@ contract VendingMachine {
     mapping(uint256 => Product) public products;
     mapping(string => uint256) public productCodeToId;
     uint256 public nextProductId;
-    uint256 public productCount;
 
     event ProductAdded(uint256 indexed id, string code, string name, uint256 price, uint256 stock);
     event ProductPurchased(address indexed buyer, uint256 indexed productId, uint256 quantity);
@@ -109,21 +108,32 @@ contract VendingMachine {
         return vntaranToken.balanceOf(address(this));
     }
 
-    // fungsi pencarian berdasarkan nama produk
-    function searchProductsByName(string memory _name) public view returns (Product[] memory) {
+    function searchProductsByName(string memory _name)
+        public
+        view
+        returns (Product[] memory)
+    {
         uint256 matchedCount = 0;
 
-        for (uint256 i = 1; i <= productCount; i++) {
-            if (keccak256(abi.encodePacked(products[i].name)) == keccak256(abi.encodePacked(_name))) {
+        // Menghitung jumlah produk yang cocok
+        for (uint256 i = 1; i < nextProductId; i++) {
+            if (
+                keccak256(abi.encodePacked(products[i].name)) ==
+                keccak256(abi.encodePacked(_name))
+            ) {
                 matchedCount++;
             }
         }
 
+        // Mengumpulkan produk yang cocok
         Product[] memory matchedProducts = new Product[](matchedCount);
         uint256 index = 0;
 
-        for (uint256 i = 1; i <= productCount; i++) {
-            if (keccak256(abi.encodePacked(products[i].name)) == keccak256(abi.encodePacked(_name))) {
+        for (uint256 i = 1; i < nextProductId; i++) {
+            if (
+                keccak256(abi.encodePacked(products[i].name)) ==
+                keccak256(abi.encodePacked(_name))
+            ) {
                 matchedProducts[index] = products[i];
                 index++;
             }
